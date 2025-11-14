@@ -15,8 +15,6 @@
 // campaignSchema.index({ businessName: 1, createdAt: -1 });
 
 // const Campaign = mongoose.model('Campaign', campaignSchema);
-
-// export default Campaign; import mongoose from 'mongoose';
 import mongoose from 'mongoose';
 
 const campaignSchema = new mongoose.Schema({
@@ -32,15 +30,15 @@ const campaignSchema = new mongoose.Schema({
   },
   originalPrompt: {
     type: String,
-    required: true
+    default: ""
   },
   translatedPrompt: {
     type: String,
-    required: true
+    default: ""
   },
   caption: {
     type: String,
-    required: true
+    default: ""
   },
   hashtags: {
     type: [String],
