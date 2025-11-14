@@ -25,53 +25,57 @@
   </style>
 </head>
 <body>
+
   <h1>Generate Marketing Image</h1>
+
   <form id="campaignForm">
     <input type="text" id="businessName" placeholder="Business Name" required />
-    <textarea id="prompt" placeholder="Enter prompt..." required></textarea>
+    <textarea id="prompt" placeholder="Enter your marketing text..." required></textarea>
     <button type="submit">Generate Image</button>
   </form>
 
   <h2>Result:</h2>
   <img id="resultImage" alt="Generated Image" />
   <p id="caption"></p>
-  <p id="hashtags"></p><script>
-  const form = document.getElementById('campaignForm');
+  <p id="hashtags"></p>
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  <script>
+    const form = document.getElementById('campaignForm');
 
-    const businessName = document.getElementById('businessName').value;
-    const prompt = document.getElementById('prompt').value;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    try {
-      const res = await fetch('https://salon-api-dira.onrender.com/api/create-campaign', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessName,
-          textInput: prompt,       // <-- FIXED HERE
-          inputType: 'text',
-          language: 'en'
-        })
-      });
+      const businessName = document.getElementById('businessName').value;
+      const prompt = document.getElementById('prompt').value;
 
-      const data = await res.json();
+      try {
+        const res = await fetch('https://salon-api-dira.onrender.com/api/create-campaign', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessName,
+            textInput: prompt,   // ✔ FIXED
+            inputType: 'text',
+            language: 'en'
+          })
+        });
 
-      if (data.success) {
-        document.getElementById('resultImage').src = data.data.imageUrl;
-        document.getElementById('caption').innerText = data.data.caption;
-        document.getElementById('hashtags').innerText = data.data.hashtags.join(' ');
-      } else {
-        alert(data.error || data.message);
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('resultImage').src = data.campaign.imageUrl;
+          document.getElementById('caption').innerText = data.campaign.caption || "";
+          document.getElementById('hashtags').innerText = data.campaign.hashtags ? data.campaign.hashtags.join(' ') : "";
+        } else {
+          alert(data.error || data.message);
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert('Failed to connect to the server. Make sure your API is live.');
       }
-    } catch (err) {
-      console.error(err);
-      alert('Failed to connect to the server. Make sure your API is live.');
-    }
-  });
-</script>
-
+    });
+  </script>
 
 </body>
 </html>
