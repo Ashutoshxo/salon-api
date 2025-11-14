@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './config/database.js';
 import campaignRoutes from './routes/campaign.routes.js';
-import authRoutes from './routes/auth.routes.js';  // ADD THIS
+import authRoutes from './routes/auth.routes.js';  
 import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
@@ -15,6 +15,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Connect to MongoDB
 connectDB();
+app.use(express.static('public'));
 
 // Routes
 app.get('/', (req, res) => {
