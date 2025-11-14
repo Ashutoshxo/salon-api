@@ -1,6 +1,16 @@
 import Campaign from "../models/Campaign.js";
 import { generateImage } from "../services/imageGeneration.js";
 
+// Simple caption generator
+function generateCaption(businessName, text) {
+  return `${businessName}: ${text}`;
+}
+
+// Simple hashtag generator
+function generateHashtags() {
+  return ["#salon", "#beauty", "#offer"];
+}
+
 // CREATE CAMPAIGN
 export const createCampaign = async (req, res) => {
   try {
@@ -24,37 +34,42 @@ export const createCampaign = async (req, res) => {
       });
     }
 
-    let prompt = "";
-
-    if (inputType === "text") {
-      if (!textInput) {
-        return res.status(400).json({
-          success: false,
-          message: "Text input is required"
-        });
-      }
-
-      prompt = `Professional ${businessName} marketing poster: ${textInput}`;
-    } else {
-      prompt = `Professional ${businessName} marketing poster`;
+    if (inputType === "text" && !textInput) {
+      return res.status(400).json({
+        success: false,
+        message: "Text input is required"
+      });
     }
 
-    // Generate AI Image
-    console.log("🤖 Generating caption and image...");
+    // Build prompts
+    const originalPrompt = textInput || "";
+    const translatedPrompt = originalPrompt; // no translation used now
+
+    // Generate image prompt
+    const prompt = `Professional ${businessName} marketing poster: ${originalPrompt}`;
+
+    // Generate AI image
+    console.log("🤖 Generating image...");
     const imageUrl = await generateImage(prompt);
 
-    console.log("🌄 Generated Image URL:", imageUrl);
+    // Generate caption + hashtags
+    const caption = generateCaption(businessName, originalPrompt);
+    const hashtags = generateHashtags();
 
-    // Save to database
+    // Save to DB
     const campaign = await Campaign.create({
       businessName,
       inputType,
       textInput,
       language,
-      imageUrl,
+      originalPrompt,
+      translatedPrompt,
+      caption,
+      hashtags,
+      imageUrl
     });
 
-    console.log("✅ Campaign created successfully:", campaign._id);
+    console.log("✅ Campaign created:", campaign._id);
 
     return res.status(201).json({
       success: true,
@@ -63,7 +78,7 @@ export const createCampaign = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Error creating campaign:", error.message);
+    console.error("❌ Error creating campaign:", error);
 
     return res.status(500).json({
       success: false,
@@ -92,7 +107,7 @@ export const getHistory = async (req, res) => {
 };
 
 
-// RETRY CAMPAIGN (regenerate image)
+// RETRY CAMPAIGN
 export const retryCampaign = async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id);
@@ -107,7 +122,7 @@ export const retryCampaign = async (req, res) => {
     console.log("🔄 Retrying campaign:", campaign._id);
 
     const newImageUrl = await generateImage(
-      `Professional ${campaign.businessName} marketing poster: ${campaign.textInput || ""}`
+      `Professional ${campaign.businessName} marketing poster: ${campaign.originalPrompt}`
     );
 
     campaign.imageUrl = newImageUrl;
