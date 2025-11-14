@@ -4,84 +4,149 @@
   <meta charset="UTF-8">
   <title>Salon Campaign Generator</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-    }
-    input, textarea, button {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-    img {
-      margin-top: 20px;
-      max-width: 100%;
-      border: 1px solid #ccc;
-      padding: 5px;
-    }
+    /* Import a modern font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #fdfdff, #2c2c2e); 
+  color: #fff;
+  margin: 0;
+  padding: 50px 20px;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.container {
+  background: linear-gradient(135deg, #000000, #262637); 
+  backdrop-filter: blur(20px); 
+  padding: 40px;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); /* dark shadow */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* subtle border */
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+}
+
+h1 {
+  text-align: center;
+  font-size: 32px;
+  margin-bottom: 30px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: #fff;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #555;
+  font-size: 16px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.05); /* dark input */
+  color: #fff;
+  transition: 0.3s;
+}
+
+input:focus, textarea:focus {
+  border-color: #0071e3; /* bright focus */
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 15px rgba(0,113,227,0.2);
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  font-size: 18px;
+  border-radius: 14px;
+  border: 1px solid #fff;
+  background: linear-gradient(145deg, #222, #111);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: linear-gradient(145deg, #333, #000);
+  box-shadow: 0 8px 20px rgba(255,255,255,0.2);
+}
+
+
   </style>
 </head>
 <body>
 
+<div class="container">
   <h1>Generate Marketing Image</h1>
 
   <form id="campaignForm">
-    <input type="text" id="businessName" placeholder="Business Name" required />
-    <textarea id="prompt" placeholder="Enter your marketing text..." required></textarea>
+    <label class="label">Business Name</label>
+    <input type="text" id="businessName" required />
+
+    <label class="label">Marketing Message</label>
+    <textarea id="prompt" rows="4" required></textarea>
+
     <button type="submit">Generate Image</button>
   </form>
 
-  <h2>Result:</h2>
-  <img id="resultImage" alt="Generated Image" />
-  <p><b>Caption:</b> <span id="caption"></span></p>
-  <p><b>Hashtags:</b> <span id="hashtags"></span></p>
-  <p><b>Original Prompt:</b> <span id="orig"></span></p>
-  <p><b>Translated Prompt:</b> <span id="trans"></span></p>
+  <div class="result">
+    <img id="resultImage" alt="Generated Image" />
+    <p><span class="label">Caption:</span> <span id="caption"></span></p>
+    <p><span class="label">Hashtags:</span> <span id="hashtags"></span></p>
+    <p><span class="label">Original Prompt:</span> <span id="orig"></span></p>
+    <p><span class="label">Translated Prompt:</span> <span id="trans"></span></p>
+  </div>
+</div>
 
-  <script>
-    const form = document.getElementById('campaignForm');
+<script>
+const form = document.getElementById('campaignForm');
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-      const businessName = document.getElementById('businessName').value;
-      const prompt = document.getElementById('prompt').value;
+  const businessName = document.getElementById('businessName').value;
+  const prompt = document.getElementById('prompt').value;
 
-      try {
-        const res = await fetch('https://salon-api-dira.onrender.com/api/create-campaign', { 
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            businessName,
-            textInput: prompt,   
-            inputType: 'text',
-            language: 'en'
-          })
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          const c = data.campaign;
-
-          document.getElementById('resultImage').src = c.imageUrl;
-          document.getElementById('caption').innerText = c.caption;
-          document.getElementById('hashtags').innerText = c.hashtags.join(' ');
-          document.getElementById('orig').innerText = c.originalPrompt;
-          document.getElementById('trans').innerText = c.translatedPrompt;
-        } else {
-          alert(data.error || data.message);
-        }
-
-      } catch (err) {
-        console.error(err);
-        alert('Failed to connect to the server. Make sure your API is live.');
-      }
+  try {
+    const res = await fetch('https://salon-api-dira.onrender.com/api/create-campaign', { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        businessName,
+        textInput: prompt,
+        inputType: 'text',
+        language: 'en'
+      })
     });
-  </script>
+
+    const data = await res.json();
+
+    if (data.success) {
+      const c = data.campaign;
+      document.getElementById('resultImage').src = c.imageUrl;
+      document.getElementById('caption').innerText = c.caption;
+      document.getElementById('hashtags').innerText = c.hashtags.join(' ');
+      document.getElementById('orig').innerText = c.originalPrompt;
+      document.getElementById('trans').innerText = c.translatedPrompt;
+    } else {
+      alert(data.error || data.message);
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert('Server not responding. Check if API is live.');
+  }
+});
+</script>
 
 </body>
 </html>
