@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './config/database.js';
 import campaignRoutes from './routes/campaign.routes.js';
-import authRoutes from './routes/auth.routes.js';  
+import authRoutes from './routes/auth.routes.js';
 import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
@@ -13,13 +13,18 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Connect to MongoDB
+
 connectDB();
+
 app.use(express.static('public'));
 
-// Routes
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api', campaignRoutes);
+
+// Root route for API info
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     success: true,
     message: '🎨 Salon Campaign API',
     version: '1.0.0',
@@ -38,18 +43,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ 
-    success: true,
-    status: 'healthy',
-    timestamp: new Date().toISOString()
-  });
-});
-
-app.use('/api/auth', authRoutes);  // ADD THIS
-app.use('/api', campaignRoutes);
-
 // Error Handler
 app.use(errorHandler);
 
@@ -57,7 +50,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 http://localhost:${PORT}`);
+  console.log(`📍 Open HTML at: http://localhost:${PORT}/index.html`);
 });
 
 export default app;

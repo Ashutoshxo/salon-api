@@ -27,8 +27,13 @@
       const res = await fetch('https://salon-api-dira.onrender.com/api/create-campaign%20/', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessName, prompt, inputType: 'text', language: 'en' })
-      });
+        body: JSON.stringify({
+        businessName: document.getElementById('businessName').value,
+        prompt: document.getElementById('prompt').value,
+        inputType: 'text',
+        language: 'en'
+        })
+    });
 
       const data = await res.json();
       if(data.success) {
