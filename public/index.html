@@ -3,44 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <title>Salon Campaign Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    img {
+      margin-top: 20px;
+      max-width: 100%;
+      border: 1px solid #ccc;
+      padding: 5px;
+    }
+  </style>
 </head>
 <body>
   <h1>Generate Marketing Image</h1>
   <form id="campaignForm">
     <input type="text" id="businessName" placeholder="Business Name" required />
-    <br /><br />
     <textarea id="prompt" placeholder="Enter prompt..." required></textarea>
-    <br /><br />
     <button type="submit">Generate Image</button>
   </form>
+
   <h2>Result:</h2>
-  <img id="resultImage" width="400" />
+  <img id="resultImage" alt="Generated Image" />
   <p id="caption"></p>
+  <p id="hashtags"></p>
 
   <script>
     const form = document.getElementById('campaignForm');
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const businessName = document.getElementById('businessName').value;
       const prompt = document.getElementById('prompt').value;
 
-      const res = await fetch('https://salon-api-dira.onrender.com/api/create-campaign%20/', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-        businessName: document.getElementById('businessName').value,
-        prompt: document.getElementById('prompt').value,
-        inputType: 'text',
-        language: 'en'
-        })
-    });
+      try {
+        const res = await fetch('https://salon-api-dira.onrender.com/api/create-campaign', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessName,
+            prompt,
+            inputType: 'text',
+            language: 'en'
+          })
+        });
 
-      const data = await res.json();
-      if(data.success) {
-        document.getElementById('resultImage').src = data.data.imageUrl;
-        document.getElementById('caption').innerText = data.data.caption;
-      } else {
-        alert(data.error || data.message);
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('resultImage').src = data.data.imageUrl;
+          document.getElementById('caption').innerText = data.data.caption;
+          document.getElementById('hashtags').innerText = data.data.hashtags.join(' ');
+        } else {
+          alert(data.error || data.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Failed to generate campaign. Check console.');
       }
     });
   </script>
