@@ -1,14 +1,12 @@
 // services/textGeneration.js
 import Groq from "groq-sdk";
 
-const groq = new Groq();
-const GROQ_MODEL = process.env.MODEL_TEXT_GEN; // should be groq/salon-marketing-gen
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY }); // ADD THIS
+const GROQ_MODEL = process.env.MODEL_TEXT_GEN || "llama-3.3-70b-versatile";
+
 
 /**
  * Generate a caption and hashtags for a salon/spa campaign prompt
- * @param {string} prompt - The campaign idea or prompt
- * @param {string} businessName - Optional business name to include in caption
- * @returns {Object} { caption: string, hashtags: Array<string> }
  */
 export async function generateCaption(prompt, businessName = "") {
   try {
@@ -25,25 +23,21 @@ export async function generateCaption(prompt, businessName = "") {
       }
     ];
 
-    // Call Groq Chat Completion API
     const completion = await groq.chat.completions.create({
       messages,
-      model: GROQ_MODEL, // <-- make sure env variable is used
+      model: GROQ_MODEL,
       temperature: 0.7,
       max_completion_tokens: 150,
       top_p: 0.9
     });
 
     const text = completion.choices[0]?.message?.content || "";
-
-    // Parse caption and hashtags
     const parsed = parseCaptionAndHashtags(text);
     return parsed;
 
   } catch (error) {
-    console.error("Groq Text Generation failed:", error.response?.data || error.message);
+    console.error("❌ Groq Text Generation failed:", error.response?.data || error.message);
 
-    // Fallback in case of error
     return {
       caption: `Exciting new offer at ${businessName}! Book your appointment today!`,
       hashtags: ["#SalonOffer", "#BeautyDeals", "#GlowUp"]
@@ -51,11 +45,6 @@ export async function generateCaption(prompt, businessName = "") {
   }
 }
 
-/**
- * Parses Groq response text into caption + hashtags
- * @param {string} text
- * @returns {Object} { caption: string, hashtags: Array<string> }
- */
 function parseCaptionAndHashtags(text) {
   const captionMatch = text.match(/CAPTION:\s*(.+?)(?=HASHTAGS:|$)/s);
   const hashtagsMatch = text.match(/HASHTAGS:\s*(.+)$/s);
@@ -74,6 +63,9 @@ function parseCaptionAndHashtags(text) {
 
   return { caption, hashtags };
 }
+
+// IMPORTANT: Export for campaign controller
+export const generateCaptionAndHashtags = generateCaption;
 
 export default {
   generateCaption

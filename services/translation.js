@@ -1,15 +1,12 @@
-// services/translation.js
 import axios from 'axios';
 
 export async function translate(text, targetLang = 'en') {
   try {
-    // Skip translation if already in target language
     if (targetLang === 'en') {
       return text;
     }
 
-    // Select model based on language
-    let model = process.env.MODEL_TRANSLATION_HI; // Default Hindi
+    let model = process.env.MODEL_TRANSLATION_HI;
     if (targetLang === 'mr') {
       model = process.env.MODEL_TRANSLATION_MR;
     }
@@ -21,20 +18,24 @@ export async function translate(text, targetLang = 'en') {
       { inputs: text },
       {
         headers: {
-          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          'Content-Type': 'application/json',
         },
-        timeout: 60000
+        timeout: 60000,
       }
     );
 
-    if (response.data && response.data[0] && response.data[0].translation_text) {
+    if (response.data?.[0]?.translation_text) {
       return response.data[0].translation_text;
     }
 
-    return text; // Fallback to original text
+    return text;
   } catch (error) {
     console.error('Translation Error:', error.response?.data || error.message);
-    return text; // Return original text on error
+    return text;
   }
+}
+
+export async function translateToEnglish(text) {
+  return await translate(text, 'en');
 }

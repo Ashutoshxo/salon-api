@@ -16,9 +16,8 @@ Thumbs.db
 uploads/*
 !uploads/.gitkeep
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
-.env

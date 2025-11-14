@@ -3,14 +3,15 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './config/database.js';
 import campaignRoutes from './routes/campaign.routes.js';
+import authRoutes from './routes/auth.routes.js';  // ADD THIS
 import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Connect to MongoDB
 connectDB();
@@ -18,16 +19,34 @@ connectDB();
 // Routes
 app.get('/', (req, res) => {
   res.json({ 
+    success: true,
     message: '🎨 Salon Campaign API',
     version: '1.0.0',
     endpoints: {
-      createCampaign: 'POST /api/create-campaign',
-      getHistory: 'GET /api/history',
-      retryCampaign: 'POST /api/retry/:id'
+      auth: {
+        register: 'POST /api/auth/register',
+        login: 'POST /api/auth/login',
+        profile: 'GET /api/auth/me'
+      },
+      campaigns: {
+        createCampaign: 'POST /api/create-campaign',
+        getHistory: 'GET /api/history',
+        retryCampaign: 'POST /api/retry/:id'
+      }
     }
   });
 });
 
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ 
+    success: true,
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.use('/api/auth', authRoutes);  // ADD THIS
 app.use('/api', campaignRoutes);
 
 // Error Handler

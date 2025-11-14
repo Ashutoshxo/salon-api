@@ -1,48 +1,42 @@
-import axios from 'axios';
+import fetch from "node-fetch";
 
-const HF_API_KEY = process.env.HUGGINGFACE_API_KEY;
+const MODEL = "black-forest-labs/FLUX.1-dev";
 
-export const generateImage = async (prompt) => {
+// MAIN IMAGE GENERATOR (Pollinations + Flux) — returns Base64
+export const generateImage = async (prompt, businessName) => {
   try {
-    // ✅ Validate prompt
-    if (!prompt || typeof prompt !== 'string' || prompt.trim() === '') {
-      console.error('❌ Invalid prompt received:', prompt);
-      throw new Error('Valid prompt is required');
+    const finalPrompt = `Professional ${businessName} marketing poster: ${prompt}`;
+
+    // Encode prompt to avoid Pollinations error 1033
+    const encodedPrompt = encodeURIComponent(finalPrompt);
+
+    // Pollinations FLUX image URL
+    const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=${MODEL}`;
+    console.log("🌄 Generated Pollinations Image URL:", url);
+
+    // Fetch image and convert to Base64
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Image fetch failed with status ${response.status}`);
     }
 
-    console.log('🎨 Generating image with prompt:', prompt.substring(0, 100) + '...');
+    const arrayBuffer = await response.arrayBuffer();
+    const base64Image = Buffer.from(arrayBuffer).toString("base64");
 
-    const response = await axios.post(
-  `https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell`,
-  { 
-    inputs: prompt,
-    parameters: {
-      guidance_scale: 3.5,
-      num_inference_steps: 4
-    }
-  },
-  {
-    headers: {
-      'Authorization': `Bearer ${HF_API_KEY}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    responseType: 'arraybuffer',
-    timeout: 30000
-  }
-);
-
-    // ✅ Convert buffer to base64
-    const base64Image = Buffer.from(response.data, 'binary').toString('base64');
-    const imageUrl = `data:image/png;base64,${base64Image}`;
-
-    console.log('✅ Image generated successfully');
-    return imageUrl;
+    return `data:image/png;base64,${base64Image}`;
 
   } catch (error) {
-    console.error('❌ Image generation error:', error.response?.data || error.message);
-    
-    // ✅ Return a placeholder image
-    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBDb3VsZG4ndCBHZW5lcmF0ZTwvdGV4dD48L3N2Zz4=';
+    console.error("❌ Error in generateImage:", error.message);
+    throw error;
   }
+};
+
+// FALLBACK (Base64 image)
+export const generateImageFallback = async () => {
+  // Simple placeholder PNG
+  const placeholderUrl = "https://via.placeholder.com/1024x1024.png?text=AI+Image+Unavailable";
+  const response = await fetch(placeholderUrl);
+  const arrayBuffer = await response.arrayBuffer();
+  const base64Image = Buffer.from(arrayBuffer).toString("base64");
+  return `data:image/png;base64,${base64Image}`;
 };
