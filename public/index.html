@@ -36,8 +36,10 @@
 
   <h2>Result:</h2>
   <img id="resultImage" alt="Generated Image" />
-  <p id="caption"></p>
-  <p id="hashtags"></p>
+  <p><b>Caption:</b> <span id="caption"></span></p>
+  <p><b>Hashtags:</b> <span id="hashtags"></span></p>
+  <p><b>Original Prompt:</b> <span id="orig"></span></p>
+  <p><b>Translated Prompt:</b> <span id="trans"></span></p>
 
   <script>
     const form = document.getElementById('campaignForm');
@@ -54,7 +56,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             businessName,
-            textInput: prompt,   // ✔ FIXED
+            textInput: prompt,   
             inputType: 'text',
             language: 'en'
           })
@@ -63,9 +65,13 @@
         const data = await res.json();
 
         if (data.success) {
-          document.getElementById('resultImage').src = data.campaign.imageUrl;
-          document.getElementById('caption').innerText = data.campaign.caption || "";
-          document.getElementById('hashtags').innerText = data.campaign.hashtags ? data.campaign.hashtags.join(' ') : "";
+          const c = data.campaign;
+
+          document.getElementById('resultImage').src = c.imageUrl;
+          document.getElementById('caption').innerText = c.caption;
+          document.getElementById('hashtags').innerText = c.hashtags.join(' ');
+          document.getElementById('orig').innerText = c.originalPrompt;
+          document.getElementById('trans').innerText = c.translatedPrompt;
         } else {
           alert(data.error || data.message);
         }
