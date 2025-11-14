@@ -36,42 +36,46 @@
   <img id="resultImage" alt="Generated Image" />
   <p id="caption"></p>
   <p id="hashtags"></p>
+<script>
+  const form = document.getElementById('campaignForm');
 
-  <script>
-    const form = document.getElementById('campaignForm');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    const businessName = document.getElementById('businessName').value;
+    const prompt = document.getElementById('prompt').value;
 
-      const businessName = document.getElementById('businessName').value;
-      const prompt = document.getElementById('prompt').value;
+    try {
+      const res = await fetch('https://salon-api-dira.onrender.com/api/create-campaign', { 
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          businessName,
+          prompt,
+          inputType: 'text',
+          language: 'en'
+        })
+      });
 
-      try {
-        const res = await fetch('https://salon-api-dira.onrender.com/api/create-campaign', { 
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            businessName,
-            prompt,
-            inputType: 'text',
-            language: 'en'
-          })
-        });
+      const data = await res.json();
+      console.log(data);
 
-        const data = await res.json();
-
-        if (data.success) {
-          document.getElementById('resultImage').src = data.data.imageUrl;
-          document.getElementById('caption').innerText = data.data.caption;
-          document.getElementById('hashtags').innerText = data.data.hashtags.join(' ');
-        } else {
-          alert(data.error || data.message);
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Failed to connect to the server. Make sure your API is live.');
+      if (data.success) {
+        document.getElementById('resultImage').src = data.data.imageUrl;
+        document.getElementById('caption').innerText = data.data.caption;
+        document.getElementById('hashtags').innerText = data.data.hashtags.join(' ');
+      } else {
+        alert(data.error || data.message);
       }
-    });
-  </script>
+    } catch (err) {
+      console.error(err);
+      alert('Failed to connect to the server. Make sure your API is live.');
+    }
+  });
+</script>
+
 </body>
 </html>
