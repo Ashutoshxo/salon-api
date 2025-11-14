@@ -5,6 +5,7 @@ import connectDB from './config/database.js';
 import campaignRoutes from './routes/campaign.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import errorHandler from './middleware/errorHandler.js';
+import { version } from 'mongoose';
 
 const app = express();
 
@@ -18,8 +19,12 @@ connectDB();
 
 app.use(express.static('public'));
 
-app.get('/health',(req, res)=>{
-  res.status(200).send("OK");
+app.get('/',(req, res)=>{
+  res.status(200).json({
+    success:true,
+    message:"salon camaingn Api is running",
+    version:"1.0.0"
+  });
 
 });
 
