@@ -1,4 +1,4 @@
-import Campaign from "../models/campaign.model.js";
+import Campaign from "../models/Campaign.js";
 import { generateImage } from "../services/imageGeneration.js";
 
 // CREATE CAMPAIGN
