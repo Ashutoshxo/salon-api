@@ -1,42 +1,44 @@
 import fetch from "node-fetch";
 
-const MODEL = "black-forest-labs/FLUX.1-dev";
+// Clean prompt function
+export const cleanPromptForImage = (prompt = "") => {
+  return prompt
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 200);
+};
 
-// MAIN IMAGE GENERATOR (Pollinations + Flux) — returns Base64
-export const generateImage = async (prompt, businessName) => {
+// MAIN FUNCTION → Generate image using Pollinations
+export const generateAIImage = async (prompt) => {
   try {
-    const finalPrompt = `Professional ${businessName} marketing poster: ${prompt}`;
+    const cleanedPrompt = cleanPromptForImage(prompt);
 
-    // Encode prompt to avoid Pollinations error 1033
-    const encodedPrompt = encodeURIComponent(finalPrompt);
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(
+      cleanedPrompt
+    )}`;
 
-    // Pollinations FLUX image URL
-    const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&model=${MODEL}`;
-    console.log("🌄 Generated Pollinations Image URL:", url);
+    const response = await fetch(pollinationsUrl);
 
-    // Fetch image and convert to Base64
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Image fetch failed with status ${response.status}`);
-    }
+    if (!response.ok) throw new Error("Pollinations failed");
 
-    const arrayBuffer = await response.arrayBuffer();
-    const base64Image = Buffer.from(arrayBuffer).toString("base64");
-
-    return `data:image/png;base64,${base64Image}`;
-
+    return pollinationsUrl; // direct image URL
   } catch (error) {
-    console.error("❌ Error in generateImage:", error.message);
-    throw error;
+    console.log("⚠ Pollinations failed → using fallback...");
+    return generateImageFallback(prompt);
   }
 };
 
-// FALLBACK (Base64 image)
+// FIXED FALLBACK — Render safe ✔
 export const generateImageFallback = async () => {
-  // Simple placeholder PNG
-  const placeholderUrl = "https://via.placeholder.com/1024x1024.png?text=AI+Image+Unavailable";
-  const response = await fetch(placeholderUrl);
-  const arrayBuffer = await response.arrayBuffer();
-  const base64Image = Buffer.from(arrayBuffer).toString("base64");
-  return `data:image/png;base64,${base64Image}`;
+  try {
+    // OPTION 1 (BEST): fast, safe, no external domain
+    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAQAAAB0e0puAAAAA0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+
+    // OPTION 2 (If you want URL fallback)
+    // return "https://placehold.co/1024x1024/png?text=AI+Image+Unavailable";
+
+  } catch (err) {
+    console.log("Fallback error:", err);
+    return null;
+  }
 };
