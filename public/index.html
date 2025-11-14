@@ -35,8 +35,7 @@
   <h2>Result:</h2>
   <img id="resultImage" alt="Generated Image" />
   <p id="caption"></p>
-  <p id="hashtags"></p>
-<script>
+  <p id="hashtags"></p><script>
   const form = document.getElementById('campaignForm');
 
   form.addEventListener('submit', async (e) => {
@@ -48,20 +47,16 @@
     try {
       const res = await fetch('https://salon-api-dira.onrender.com/api/create-campaign', { 
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           businessName,
-          prompt,
+          textInput: prompt,       // <-- FIXED HERE
           inputType: 'text',
           language: 'en'
         })
       });
 
       const data = await res.json();
-      console.log(data);
 
       if (data.success) {
         document.getElementById('resultImage').src = data.data.imageUrl;
@@ -76,6 +71,7 @@
     }
   });
 </script>
+
 
 </body>
 </html>
